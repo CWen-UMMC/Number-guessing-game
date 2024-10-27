@@ -1,0 +1,92 @@
+import random
+import os
+
+
+topPlayers = "topPlayers.txt"
+
+def initialize_top_players():
+    # Initialize the top players file if it doesn't exist
+    if not os.path.exists(topPlayers):
+        with open(topPlayers, 'w') as file:
+            file.write(" " * 10 + "No players yet\n" * 5)
+
+def load_top_players():
+    # Load top players from file
+    players = []
+    with open(topPlayers, 'r') as file:
+        for line in file:
+            if line.strip():
+                parts = line.strip().split(maxsplit=1)
+                if len(parts) == 2:
+                    try:
+                        score = int(parts[0].strip())
+                        name = parts[1].strip()
+                        players.append((score, name))
+                    except ValueError:
+                        pass
+
+    players = sorted(players, key=lambda x: x[0])[:5]
+    return players
+
+def save_top_players(players):
+    # Save top players to file
+    with open(topPlayers, 'w') as file:
+        for score, name in players:
+            file.write(f"{str(score).ljust(10)}{name}\n")
+
+def update_top_players(guess_count, player_name):
+    # Update top players list with new score and name
+    players = load_top_players()
+    players.append((guess_count, player_name))
+    players = sorted(players, key=lambda x: x[0])[:5]  # Keep top 5 scores
+    save_top_players(players)
+
+def display_top_players():
+    # Display the top 5 players
+    players = load_top_players()
+    print("\nTop 5 Players:")
+    for score, name in players:
+        print(f"{str(score).ljust(10)}{name}")
+    print()
+
+def play_game():
+    # Get player's name
+    player_name = input("Enter your name: ")
+    print("\nWelcome to the Number Guessing Game!")
+    print("I have chosen a number between 1 and 100.")
+    print("Try to guess it! Type 'q' to quit at any time.\n")
+
+    # Generate a random number between 1 and 100
+    number = random.randint(1, 100)
+    guess_count = 0
+
+    while True:
+        # Get player's guess
+        player_guess = input("Enter your guess: ")
+
+        # Allow quitting
+        if player_guess.lower() == 'q':
+            print("You've decided to quit the game. Thanks for playing!")
+            return
+
+        # Attempt to convert input to an integer
+        try:
+            player_guess = int(player_guess)
+        except ValueError:
+            print("Please enter a valid number between 1 and 100 or 'q' to quit.")
+            continue
+
+        # Increment guess counter
+        guess_count += 1
+
+        # Check if the guess is correct
+        if player_guess < number:
+            print("Your guess is too low. Try again!")
+        elif player_guess > number:
+            print("Your guess is too high. Try again!")
+        else:
+            print(f"Good job, {player_name}! You guessed the correct number {number} in {guess_count} guesses.")
+            # Update the top players list with the player's score
+            update_top_players(guess_count, player_name)
+            display_top_players()  # Display updated top players list
+            break
